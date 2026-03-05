@@ -1,0 +1,14 @@
+{
+    "name": "gardentour/maui-map",
+    "description": "Maui Garden Tour Interactive Map Application",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "autoload": {
+        "files": [
+            "envloader.php"
+        ]
+    }
+}

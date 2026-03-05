@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- ʻŌhiʻa Lehua Favicon - 16x16 with 8 stamens (ultra simplified) -->
+  
+  <!-- Background circle with green border -->
+  <circle cx="8" cy="8" r="7.5" fill="#fef8f8" stroke="#2e7d32" stroke-width="0.5"/>
+  
+  <!-- Flower centered -->
+  <g id="ohia-lehua" transform="translate(8, 8)">
+    
+    <!-- Radiating Stamens - 8 stamens at 45° intervals -->
+    <g stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round" fill="#ff5252">
+      <!-- 0° (up) -->
+      <line x1="0" y1="-2.5" x2="0" y2="-6"/>
+      <circle cx="0" cy="-6.5" r="1"/>
+      
+      <!-- 45° -->
+      <line x1="0" y1="-2.5" x2="0" y2="-5.5" transform="rotate(45)"/>
+      <circle cx="0" cy="-6" r="0.9" transform="rotate(45)"/>
+      
+      <!-- 90° (right) -->
+      <line x1="0" y1="-2.5" x2="0" y2="-6" transform="rotate(90)"/>
+      <circle cx="0" cy="-6.5" r="1" transform="rotate(90)"/>
+      
+      <!-- 135° -->
+      <line x1="0" y1="-2.5" x2="0" y2="-5.5" transform="rotate(135)"/>
+      <circle cx="0" cy="-6" r="0.9" transform="rotate(135)"/>
+      
+      <!-- 180° (down) -->
+      <line x1="0" y1="-2.5" x2="0" y2="-6" transform="rotate(180)"/>
+      <circle cx="0" cy="-6.5" r="1" transform="rotate(180)"/>
+      
+      <!-- 225° -->
+      <line x1="0" y1="-2.5" x2="0" y2="-5.5" transform="rotate(225)"/>
+      <circle cx="0" cy="-6" r="0.9" transform="rotate(225)"/>
+      
+      <!-- 270° (left) -->
+      <line x1="0" y1="-2.5" x2="0" y2="-6" transform="rotate(270)"/>
+      <circle cx="0" cy="-6.5" r="1" transform="rotate(270)"/>
+      
+      <!-- 315° -->
+      <line x1="0" y1="-2.5" x2="0" y2="-5.5" transform="rotate(315)"/>
+      <circle cx="0" cy="-6" r="0.9" transform="rotate(315)"/>
+    </g>
+    
+    <!-- Center of flower -->
+    <circle cx="0" cy="0" r="3" fill="#ffccbc"/>
+    <circle cx="0" cy="0" r="2" fill="#ffab91"/>
+  </g>
+</svg>

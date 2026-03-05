@@ -1,0 +1,30 @@
+# Environment and secrets
+.env
+
+# Composer
+/vendor/
+
+# Uploads (user content)
+/uploads/*
+!/uploads/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+error_log
+
+# Backups
+*.bak
+*.backup
+**/php_errorlog
+uploads

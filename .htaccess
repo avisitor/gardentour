@@ -1,0 +1,30 @@
+# Maui Garden Tour Map - Apache Configuration
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^\.env|composer\.(json|lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect includes directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^includes/ - [F,L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# PHP settings (if allowed)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 60
+</IfModule>
