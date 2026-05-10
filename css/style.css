@@ -121,6 +121,20 @@ body {
     background: rgba(46, 125, 50, 0.1);
 }
 
+.nav-link-primary {
+    color: var(--primary-color);
+    background: rgba(46, 125, 50, 0.1);
+}
+
+.nav-link-primary:hover {
+    color: white;
+    background: var(--primary-color);
+}
+
+.nav-link[hidden] {
+    display: none;
+}
+
 /* ==================== Map ==================== */
 .map {
     flex: 1;
@@ -331,6 +345,51 @@ body {
     color: var(--text-muted);
 }
 
+.reconnect-box {
+    padding: 12px;
+    border: 1px solid rgba(46, 125, 50, 0.18);
+    border-radius: var(--radius-md);
+    background: rgba(46, 125, 50, 0.05);
+}
+
+.reconnect-box-modal {
+    margin-top: 16px;
+}
+
+.reconnect-box p {
+    margin-bottom: 8px;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.reconnect-inline-form {
+    display: flex;
+    gap: 8px;
+}
+
+.reconnect-inline-form input[type="email"] {
+    flex: 1;
+}
+
+.reconnect-inline-form .btn {
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+
+.reconnect-status {
+    min-height: 18px;
+    margin: 8px 0 0;
+    font-size: 0.75rem;
+}
+
+.reconnect-status.success {
+    color: var(--success-color);
+}
+
+.reconnect-status.error {
+    color: var(--error-color);
+}
+
 /* File Upload */
 .file-upload {
     position: relative;
@@ -467,6 +526,16 @@ body {
 
 .modal.visible {
     display: flex;
+}
+
+.modal.dissolving {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.dissolving .modal-content {
+    transform: scale(0.96);
+    transition: transform 0.3s ease;
 }
 
 .modal-backdrop {

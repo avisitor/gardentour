@@ -41,6 +41,7 @@ $csrfToken = $_SESSION['csrf_token'];
                 <img src="images/logo.svg" alt="<?= htmlspecialchars($siteName) ?>" class="logo-image">
             </a>
             <nav class="nav">
+                <a href="#reconnect" class="nav-link nav-link-primary" id="reconnectBtn">Reconnect</a>
                 <a href="#about" class="nav-link" id="aboutBtn">About</a>
                 <a href="admin/" class="nav-link">Admin</a>
             </nav>
@@ -171,6 +172,22 @@ $csrfToken = $_SESSION['csrf_token'];
             <p>We've sent a confirmation link to <strong id="successEmail"></strong></p>
             <p class="modal-hint">Your pin will appear on the map after you confirm.</p>
             <button class="btn btn-primary" id="successOk">Got it!</button>
+        </div>
+    </div>
+
+    <div class="modal" id="reconnectModal">
+        <div class="modal-backdrop" id="reconnectBackdrop"></div>
+        <div class="modal-content modal-confirm">
+            <div class="modal-icon">🔗</div>
+            <h2>Reconnect Your Pin</h2>
+            <p>If you already placed a pin, enter the same email address. Matching pins will become editable on this device.</p>
+            <div class="reconnect-box reconnect-box-modal">
+                <div class="reconnect-inline-form" id="reconnectForm">
+                    <input type="email" id="reconnectEmail" placeholder="your@email.com">
+                    <button type="button" class="btn btn-primary" id="reconnectSubmit">Reconnect</button>
+                </div>
+                <p class="reconnect-status" id="reconnectStatus" aria-live="polite"></p>
+            </div>
         </div>
     </div>
 

@@ -27,10 +27,10 @@ session_start();
 /**
  * Send JSON response and exit
  */
-function jsonResponse(bool $success, string $message, int $statusCode = 200): void
+function jsonResponse(bool $success, string $message, int $statusCode = 200, array $extra = []): void
 {
     http_response_code($statusCode);
-    echo json_encode(['success' => $success, 'message' => $message]);
+    echo json_encode(array_merge(['success' => $success, 'message' => $message], $extra));
     exit;
 }
 
@@ -248,8 +248,21 @@ try {
     ];
     
     sendConfirmationEmail($email, $token, $submissionData);
+
+    $cookieExpiry = time() + (365 * 24 * 60 * 60);
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+
+    setcookie('garden_tour_email', $email, [
+        'expires' => $cookieExpiry,
+        'path' => '/',
+        'secure' => $isSecure,
+        'httponly' => false,
+        'samesite' => 'Lax'
+    ]);
     
-    jsonResponse(true, 'Confirmation email sent! Please check your inbox.');
+    jsonResponse(true, 'Confirmation email sent! Please check your inbox.', 200, ['email' => $email]);
     
 } catch (PDOException $e) {
     error_log("Database error in submit.php: " . $e->getMessage());

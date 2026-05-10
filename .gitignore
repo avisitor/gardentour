@@ -28,3 +28,4 @@ error_log
 *.backup
 **/php_errorlog
 uploads
+.sisyphus

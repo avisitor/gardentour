@@ -15,6 +15,7 @@ let editingMarker = null;
 let editingPinId = null;
 let userHasPins = false;  // Track if user already has pins on the map
 let addressManuallyEdited = false;  // Track if user has manually edited the address
+const USER_EMAIL_STORAGE_KEY = 'garden_tour_email';
 
 /**
  * Initialize the Google Map
@@ -67,6 +68,8 @@ async function initMap() {
 
         // Create shared info window
         infoWindow = new InfoWindow();
+
+        restoreUserEmail();
 
         // Load existing pins
         loadExistingPins();
@@ -255,6 +258,12 @@ async function loadExistingPins() {
         const data = await response.json();
 
         if (data.success && data.pins) {
+            existingMarkers.forEach(marker => {
+                marker.map = null;
+            });
+            existingMarkers = [];
+            userHasPins = false;
+
             data.pins.forEach(pin => {
                 addExistingMarker(pin);
             });
@@ -304,7 +313,8 @@ function addExistingMarker(pinData) {
         },
         map: map,
         content: pinElement,
-        title: pinData.name || 'Garden Location'
+        title: pinData.name || 'Garden Location',
+        gmpClickable: true
     });
 
     // Store pin data with the marker
@@ -312,7 +322,7 @@ function addExistingMarker(pinData) {
     marker.isOwner = isOwner;
 
     // Add click listener to show info window
-    marker.addListener('click', function() {
+    marker.addEventListener('gmp-click', function() {
         showPinInfo(marker);
     });
 
@@ -397,11 +407,70 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-/**
- * Get the user's email from config (set from cookie)
- */
 function getUserEmail() {
-    return window.APP_CONFIG.userEmail || '';
+    const configEmail = window.APP_CONFIG.userEmail || '';
+    if (configEmail) {
+        return configEmail;
+    }
+
+    try {
+        return localStorage.getItem(USER_EMAIL_STORAGE_KEY) || '';
+    } catch (error) {
+        console.warn('Could not read saved Garden Tour email:', error);
+        return '';
+    }
+}
+
+function saveUserEmail(email) {
+    const normalizedEmail = (email || '').trim();
+    window.APP_CONFIG.userEmail = normalizedEmail;
+
+    updateReconnectVisibility();
+
+    if (!normalizedEmail) {
+        return;
+    }
+
+    try {
+        localStorage.setItem(USER_EMAIL_STORAGE_KEY, normalizedEmail);
+    } catch (error) {
+        console.warn('Could not save Garden Tour email:', error);
+    }
+}
+
+function restoreUserEmail() {
+    const email = getUserEmail();
+    if (email) {
+        saveUserEmail(email);
+        console.log('Garden Tour: User email available:', email);
+    } else {
+        console.log('Garden Tour: User email not set');
+    }
+
+    updateReconnectVisibility();
+}
+
+function updateReconnectVisibility() {
+    const reconnectButton = document.getElementById('reconnectBtn');
+    if (!reconnectButton) {
+        return;
+    }
+
+    reconnectButton.hidden = Boolean(getUserEmail());
+}
+
+function dissolveReconnectModal() {
+    const reconnectModal = document.getElementById('reconnectModal');
+    if (!reconnectModal) {
+        return;
+    }
+
+    reconnectModal.classList.add('dissolving');
+
+    setTimeout(function() {
+        hideModal('reconnectModal');
+        reconnectModal.classList.remove('dissolving');
+    }, 300);
 }
 
 /**
@@ -573,6 +642,15 @@ function initUIHandlers() {
         hideModal('aboutModal');
     });
 
+    document.getElementById('reconnectBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        showModal('reconnectModal');
+        document.getElementById('reconnectEmail').focus();
+    });
+    document.getElementById('reconnectBackdrop').addEventListener('click', function() {
+        hideModal('reconnectModal');
+    });
+
     // Success modal
     document.getElementById('successOk').addEventListener('click', function() {
         hideModal('successModal');
@@ -617,6 +695,11 @@ function initUIHandlers() {
 
     // Form submission
     document.getElementById('submissionForm').addEventListener('submit', handleFormSubmit);
+
+    const reconnectSubmit = document.getElementById('reconnectSubmit');
+    if (reconnectSubmit) {
+        reconnectSubmit.addEventListener('click', handleReconnectSubmit);
+    }
 
     // Email validation to enable submit button
     document.getElementById('email').addEventListener('input', validateForm);
@@ -789,6 +872,11 @@ async function handleFormSubmit(event) {
         document.getElementById('loadingOverlay').classList.remove('visible');
         
         if (data.success) {
+            const submittedEmail = formData.get('email');
+            if (submittedEmail) {
+                saveUserEmail(submittedEmail);
+            }
+
             if (editMode) {
                 // Update was successful
                 // Update the marker data and recreate with new position
@@ -847,6 +935,50 @@ async function handleFormSubmit(event) {
         
         console.error('Submission error:', error);
         alert('An error occurred. Please check your connection and try again.');
+    }
+}
+
+async function handleReconnectSubmit(event) {
+    event.preventDefault();
+
+    const emailInput = document.getElementById('reconnectEmail');
+    const email = (emailInput.value || '').trim();
+    const statusElement = document.getElementById('reconnectStatus');
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('csrf_token', window.APP_CONFIG.csrfToken);
+
+    if (!email) {
+        statusElement.textContent = 'Please enter your email address.';
+        statusElement.className = 'reconnect-status error';
+        return;
+    }
+
+    statusElement.textContent = 'Checking for your sites...';
+    statusElement.className = 'reconnect-status';
+
+    try {
+        const response = await fetch('api/reconnect.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            saveUserEmail(email);
+            statusElement.textContent = data.message || 'Reconnected. Your pins are now editable on this device.';
+            statusElement.className = 'reconnect-status success';
+            loadExistingPins();
+            dissolveReconnectModal();
+        } else {
+            statusElement.textContent = data.message || 'No confirmed sites were found for that email.';
+            statusElement.className = 'reconnect-status error';
+        }
+    } catch (error) {
+        console.error('Reconnect error:', error);
+        statusElement.textContent = 'Could not reconnect right now. Please try again.';
+        statusElement.className = 'reconnect-status error';
     }
 }
 

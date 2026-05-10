@@ -60,8 +60,7 @@ if (empty($token)) {
             // Delete from pending
             dbExecute("DELETE FROM pending_submissions WHERE id = ?", [$pending['id']]);
             
-            // Set cookie to allow editing this user's pins (30 days)
-            $cookieExpiry = time() + (30 * 24 * 60 * 60);
+            $cookieExpiry = time() + (365 * 24 * 60 * 60);
             $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
                         || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
                         || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
