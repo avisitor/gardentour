@@ -4,11 +4,18 @@
     "type": "project",
     "require": {
         "php": ">=8.0",
-        "phpmailer/phpmailer": "^6.8"
+        "phpmailer/phpmailer": "^6.8",
+        "avisitor/env-loader": "^1.0"
     },
     "autoload": {
         "files": [
             "envloader.php"
         ]
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/avisitor/env-loader.git"
+        }
+    ]
 }

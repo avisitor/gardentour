@@ -1,11 +1,11 @@
 <?php
 /**
  * Environment Variable Loader
- * 
- * Loads configuration from .env file and makes variables available
- * via getenv(), $_ENV, and $_SERVER.
- * 
- * Include this file at the top of every PHP script that needs configuration.
+ *
+ * Thin delegating shim over the canonical avisitor/env-loader package
+ * (Avisitor\Env\Loader). Keeps the app's EnvLoader class API and its
+ * fail-fast behavior (throws when .env is missing), while all parsing and
+ * lookup is done by the shared package.
  */
 
 if (!class_exists('EnvLoader')) {
@@ -23,8 +23,11 @@ class EnvLoader
         if (self::$loaded) {
             return;
         }
+        if (!class_exists('Avisitor\\Env\\Loader')) {
+            return; // canonical package not autoloaded yet; get() retries
+        }
 
-        self::$envPath = $path ?? dirname(__FILE__) . '/.env';
+        self::$envPath = $path ?? __DIR__ . '/.env';
 
         if (!file_exists(self::$envPath)) {
             throw new RuntimeException(
@@ -33,32 +36,17 @@ class EnvLoader
             );
         }
 
-        $lines = file(self::$envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-        foreach ($lines as $line) {
-            // Skip comments
-            if (strpos(trim($line), '#') === 0) {
-                continue;
+        // Snapshot pre-existing env vars: the previous local implementation
+        // never overwrote values already in the environment. Restore them
+        // after the canonical loader runs.
+        $before = getenv();
+        $env = \Avisitor\Env\Loader::load(self::$envPath);
+        foreach ($env as $key => $value) {
+            if (isset($before[$key])) {
+                putenv("$key={$before[$key]}");
+                $_ENV[$key] = $before[$key];
             }
-
-            // Parse key=value pairs
-            if (strpos($line, '=') !== false) {
-                list($key, $value) = explode('=', $line, 2);
-                $key = trim($key);
-                $value = trim($value);
-
-                // Remove surrounding quotes if present
-                if (preg_match('/^(["\'])(.*)\\1$/', $value, $matches)) {
-                    $value = $matches[2];
-                }
-
-                // Don't overwrite existing environment variables
-                if (!getenv($key)) {
-                    putenv("$key=$value");
-                    $_ENV[$key] = $value;
-                    $_SERVER[$key] = $value;
-                }
-            }
+            $_SERVER[$key] = $_ENV[$key] ?? $value;
         }
 
         self::$loaded = true;
@@ -73,8 +61,7 @@ class EnvLoader
             self::load();
         }
 
-        $value = getenv($key);
-        return $value !== false ? $value : $default;
+        return \Avisitor\Env\Loader::get($key, $default);
     }
 
     /**
@@ -83,7 +70,7 @@ class EnvLoader
     public static function getRequired(string $key)
     {
         $value = self::get($key);
-        
+
         if ($value === null || $value === '') {
             throw new RuntimeException("Required environment variable not set: $key");
         }
@@ -100,8 +87,11 @@ class EnvLoader
     }
 }
 
-// Auto-load environment on include
-EnvLoader::load();
+// Auto-load environment on include (only when the canonical package is
+// already available; otherwise load() is triggered lazily by get()).
+if (class_exists('Avisitor\\Env\\Loader')) {
+    EnvLoader::load();
+}
 
 // Helper function for quick access
 if (!function_exists('env')) {

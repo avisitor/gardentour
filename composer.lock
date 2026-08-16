@@ -4,8 +4,41 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "791f2d7de4cdb0381012de76c26d20af",
+    "content-hash": "2439029403960a157b555bf1ac70da12",
     "packages": [
+        {
+            "name": "avisitor/env-loader",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:avisitor/env-loader.git",
+                "reference": "2f1e90d433b852b162d405dc7a2a193f513a5f47"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/avisitor/env-loader/zipball/2f1e90d433b852b162d405dc7a2a193f513a5f47",
+                "reference": "2f1e90d433b852b162d405dc7a2a193f513a5f47",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Avisitor\\Env\\": "src/"
+                }
+            },
+            "description": "Standalone .env file loader — zero dependencies",
+            "support": {
+                "source": "https://github.com/avisitor/env-loader/tree/v1.0.0",
+                "issues": "https://github.com/avisitor/env-loader/issues"
+            },
+            "time": "2026-08-16T09:29:44+00:00"
+        },
         {
             "name": "phpmailer/phpmailer",
             "version": "v6.12.0",
