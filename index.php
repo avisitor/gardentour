@@ -1,8 +1,11 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Maui Garden Tour Map - Main Page
  */
-require_once __DIR__ . '/envloader.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY', '');
 $googleMapsMapId = env('GOOGLE_MAPS_MAP_ID', 'DEMO_MAP_ID');

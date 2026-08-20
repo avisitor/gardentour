@@ -1,11 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Email Confirmation Handler
  * 
  * Validates confirmation token and moves pending submission to confirmed.
  */
 
-require_once __DIR__ . '/envloader.php';
+require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/includes/db.php';
 
 $siteName = 'Maui Garden Tour Map';

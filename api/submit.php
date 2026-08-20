@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * API Endpoint: Submit new pin
  * 
@@ -6,7 +9,7 @@
  * and sends confirmation email.
  */
 
-require_once __DIR__ . '/../envloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/image.php';
@@ -215,7 +218,7 @@ try {
     
     // Calculate expiration time
     $expiryHours = (int) env('TOKEN_EXPIRY_HOURS', 24);
-    $expiresAt = date('Y-m-d H:i:s', strtotime("+{$expiryHours} hours"));
+    $expiresAt = date('Y-m-d H:i:s', (int)strtotime("+{$expiryHours} hours"));
     
     // Clean up any expired pending submissions for this email
     dbExecute(

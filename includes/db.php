@@ -1,11 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Database Connection
  * 
  * Provides PDO database connection using environment variables.
  */
 
-require_once __DIR__ . '/../envloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Get PDO database connection

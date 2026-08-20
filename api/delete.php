@@ -1,11 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * API Endpoint: Delete a pin
  * 
  * Handles deleting a submission. Requires matching email cookie.
  */
 
-require_once __DIR__ . '/../envloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../includes/db.php';
 
 // Set JSON response header

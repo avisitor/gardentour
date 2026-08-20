@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Admin Dashboard
  * 
@@ -10,7 +13,7 @@
  * - Record detail view
  */
 
-require_once __DIR__ . '/../envloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../includes/db.php';
 
 // Start session for authentication
@@ -768,7 +771,7 @@ function sortIndicator($column, $currentSort, $currentDir) {
                             <td class="truncate"><?= htmlspecialchars($row['name'] ?: '(none)') ?></td>
                             <td class="truncate"><?= htmlspecialchars($row['email']) ?></td>
                             <td class="truncate"><?= htmlspecialchars($row['address'] ?: '(none)') ?></td>
-                            <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                            <td><?= date('Y-m-d', (int)strtotime($row['created_at'])) ?></td>
                             <td class="actions">
                                 <button class="btn btn-secondary btn-sm" onclick="showDetail(JSON.parse(this.closest('tr').dataset.submission))">View</button>
                                 <button class="btn btn-danger btn-sm" onclick="confirmDelete(<?= $row['id'] ?>)">Delete</button>

@@ -29,3 +29,6 @@ error_log
 **/php_errorlog
 uploads
 .sisyphus
+.omo
+.opencode
+.phpunit.cache

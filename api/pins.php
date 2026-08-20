@@ -1,11 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * API Endpoint: Get confirmed pins
  * 
  * Returns all confirmed submissions as JSON for display on the map.
  */
 
-require_once __DIR__ . '/../envloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../includes/db.php';
 
 // Set JSON response header

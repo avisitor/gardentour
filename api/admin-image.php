@@ -1,11 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * API Endpoint: Admin Image Management
  * 
  * Handles image removal and replacement for admin users.
  */
 
-require_once __DIR__ . '/../envloader.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/image.php';
 

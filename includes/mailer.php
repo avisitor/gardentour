@@ -1,20 +1,84 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Email Mailer Wrapper
- * 
- * Provides email sending functionality using PHPMailer with SMTP.
+ *
+ * Provides email sending functionality. All sends route through the canonical
+ * mailprovider path (mailprovider -> mailserviceclient -> mail-service) with
+ * the external/local switch intact; the original PHPMailer SMTP delivery is
+ * retained as the local-mode fallback via sendMailInternal().
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../envloader.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+// Canonical mailprovider helpers (mail_provider_send_mail etc.).
+require_once __DIR__ . '/../vendor/avisitor/mailprovider/src/Support/AppMailProviderHelpers.php';
+
 /**
- * Send an email using configured SMTP settings
- * 
+ * Local-mode delivery used by mail_provider_send_mail's local callback when
+ * USE_EXTERNAL_MAIL is not enabled. Keeps the original PHPMailer SMTP path
+ * available as the local-dev fallback (mailprovider's external/local switch
+ * intact).
+ *
+ * @param array $mailparams mailparams with a single 'to' recipient array
+ *                          (['email' => ..., 'name' => ...]).
+ * @return bool
+ */
+function sendMailInternal( $mailparams ) {
+    $to = $mailparams['to'] ?? '';
+    if (is_array($to)) {
+        $toemail = $to['email'] ?? '';
+        $toname  = $to['name'] ?? '';
+    } else {
+        $toemail = $to;
+        $toname  = $mailparams['toname'] ?? '';
+    }
+    $subject = $mailparams['subject'] ?? '';
+    $message = $mailparams['message'] ?? '';
+    $from    = $mailparams['from'] ?? '';
+    $fromName = $mailparams['fromname'] ?? '';
+
+    try {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = env('SMTP_HOST', 'smtp.gmail.com');
+        $mail->SMTPAuth = true;
+        $mail->Username = env('SMTP_USER');
+        $mail->Password = env('SMTP_PASS');
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = (int) env('SMTP_PORT', 587);
+
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
+
+        $mail->setFrom(
+            $from ?: env('SMTP_FROM_EMAIL', env('SMTP_USER')),
+            $fromName ?: env('SMTP_FROM_NAME', 'Maui Garden Tour')
+        );
+
+        $mail->addAddress($toemail, $toname);
+
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $message;
+        $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $message));
+
+        return $mail->send();
+    } catch (Exception $e) {
+        error_log("Email send failed: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+/**
+ * Send an email using the canonical mailprovider path.
+ *
  * @param string $to Recipient email address
  * @param string $subject Email subject
  * @param string $htmlBody HTML email body
@@ -24,69 +88,24 @@ use PHPMailer\PHPMailer\Exception;
  */
 function sendEmail(string $to, string $subject, string $htmlBody, ?string $textBody = null): bool
 {
-    $mail = new PHPMailer(true);
-
-    try {
-        // SMTP Configuration
-        $mail->isSMTP();
-        $mail->Host = env('SMTP_HOST', 'smtp.gmail.com');
-        $mail->SMTPAuth = true;
-        $mail->Username = env('SMTP_USER');
-        $mail->Password = env('SMTP_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = (int) env('SMTP_PORT', 587);
-        
-        // Character encoding - important for emojis and special characters
-        $mail->CharSet = 'UTF-8';
-        $mail->Encoding = 'base64';
-        
-        // Debug: log SMTP connection details (not password)
-        error_log("SMTP Config - Host: " . $mail->Host . ", Port: " . $mail->Port . ", User: " . $mail->Username);
-
-        // Sender
-        $mail->setFrom(
-            env('SMTP_FROM_EMAIL', env('SMTP_USER')),
-            env('SMTP_FROM_NAME', 'Maui Garden Tour')
-        );
-
-        // Recipient
-        $mail->addAddress($to);
-        
-        // Add List-Unsubscribe header (helps with spam scores)
-        $siteUrl = rtrim(env('SITE_URL', ''), '/');
-        $adminEmail = env('ADMIN_EMAIL', '');
-        if ($adminEmail) {
-            $mail->addCustomHeader('List-Unsubscribe', "<mailto:{$adminEmail}?subject=Unsubscribe>");
-        }
-        
-        // Debug: log email details
-        error_log("Sending email to: $to, Subject: $subject");
-
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body = $htmlBody;
-
-        if ($textBody) {
-            $mail->AltBody = $textBody;
-        } else {
-            // Auto-generate plain text from HTML
-            $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlBody));
-        }
-
-        $result = $mail->send();
-        error_log("Email send result: " . ($result ? "SUCCESS" : "FAILED"));
-        return $result;
-
-    } catch (Exception $e) {
-        error_log("Email send failed: " . $mail->ErrorInfo);
-        throw $e;
+    $mailparams = [
+        'to' => [ [ 'email' => $to, 'name' => '' ] ],
+        'subject' => $subject,
+        'message' => $htmlBody,
+        'from' => (string) env('SMTP_FROM_EMAIL', (string) env('SMTP_USER', '')),
+        'fromname' => (string) env('SMTP_FROM_NAME', 'Maui Garden Tour'),
+    ];
+    $result = \MailProvider\Support\mail_provider_send_mail($mailparams);
+    if (empty($result['success'])) {
+        error_log("Email send failed: " . ($result['error'] ?? 'Unknown error'));
+        throw new Exception('Email send failed: ' . ($result['error'] ?? 'Unknown error'));
     }
+    return true;
 }
 
 /**
  * Send confirmation email for a pending submission
- * 
+ *
  * @param string $email Recipient email
  * @param string $token Confirmation token
  * @param array $submissionData Additional data for the email
