@@ -22,6 +22,11 @@
     },
     "repositories": [
         {
+            "name": "monolog-context",
+            "type": "vcs",
+            "url": "https://github.com/avisitor/monolog-context"
+        },
+        {
             "type": "vcs",
             "url": "https://github.com/avisitor/env-loader.git"
         },
