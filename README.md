@@ -17,7 +17,7 @@ An interactive web application allowing users to place pins on a map of Maui and
 
 ## Requirements
 
-- PHP 8.0+
+- PHP 8.1+ (enforced by `composer.json`)
 - MySQL 5.7+ or MariaDB 10.3+
 - Composer
 - Google Maps API key
@@ -29,8 +29,8 @@ An interactive web application allowing users to place pins on a map of Maui and
 
 ```bash
 cd /var/www/html
-git clone <repository-url> gardentourmap
-cd gardentourmap
+git clone <repository-url> gardentour
+cd gardentour
 ```
 
 ### 2. Install dependencies
@@ -129,28 +129,45 @@ For Nginx, add appropriate rules to protect sensitive files.
 ## File Structure
 
 ```
-gardentourmap/
+gardentour/
 ├── index.php           # Main map page
 ├── confirm.php         # Email confirmation handler
 ├── envloader.php       # Environment variable loader
 ├── schema.sql          # Database schema
 ├── composer.json       # PHP dependencies
+├── phpunit.xml         # PHPUnit configuration
 ├── .env.example        # Configuration template
 ├── .htaccess           # Apache security rules
 ├── admin/
 │   └── index.php       # Admin dashboard
 ├── api/
 │   ├── submit.php      # Handle new submissions
-│   └── pins.php        # Get confirmed pins
+│   ├── pins.php        # Get confirmed pins
+│   ├── update.php      # Update a submission (matching email cookie)
+│   ├── delete.php      # Delete a submission (matching email cookie)
+│   ├── admin-image.php # Image removal/replacement (admin)
+│   └── reconnect.php   # Re-establish email-cookie ownership of existing pins
 ├── includes/
 │   ├── db.php          # Database functions
+│   ├── image.php       # Image validation/storage helpers
 │   └── mailer.php      # Email functions
+├── tests/
+│   ├── bootstrap.php   # PHPUnit bootstrap
+│   └── SmokeTest.php   # Syntax + structural smoke tests
 ├── uploads/            # User-uploaded images
 ├── css/
 │   └── style.css       # Styles
 └── js/
     └── map.js          # Map interactions
 ```
+
+## Tests
+
+```bash
+composer test        # or: vendor/bin/phpunit
+```
+
+`tests/SmokeTest.php` runs `php -l` over every project PHP file and checks the shared escaping helper. It needs no database or network access. PHPUnit configuration lives in `phpunit.xml`, with `tests/bootstrap.php` as the bootstrap.
 
 ## Security
 
